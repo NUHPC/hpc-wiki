@@ -1,0 +1,679 @@
+# Software
+
+<div class="snapshot-banner">
+Original wording normalized from <strong>Software - NU HPC Wiki.mhtml</strong>, saved on 4 August 2026. Commands and limits on this page are historical and may be incorrect.
+</div>
+
+NU HPC systems provide a large and diverse set of software, including various compilers, programming languages, libraries, and applications. Users can also build and install software of their choosing themselves in their home directories.
+
+The following guides provide instructions for finding and loading software, building and installing software, as well as using popular applications.
+
+
+## Software installation requests
+
+Software installation requests on NU HPC systems follows specific criteria to ensure compatibility and effective use of resources. Submit a request via <a href="https://helpdesk.nu.edu.kz/support/catalog/items/272" class="external text" rel="nofollow">NU IT Helpdesk ticketing system</a> only if the software meets all of the following criteria:
+
+- **Availability and licensing:** The software is freely available or covered by a Nazarbayev University site license.
+- **Compatibility:** It is compatible with the existing operating system environment on NU HPC systems and can be integrated without disrupting existing services.
+- **Resource utilization:** It can make effective use of NU HPC resources (CPU/GPU, memory, storage, MPI, etc.) to deliver meaningful performance.
+
+For guidance or support regarding the installation of new software packages, users may contact system administrators at <a href="mailto:hpcadmin@nu.edu.kz" class="external text" rel="nofollow">hpcadmin@nu.edu.kz</a>.
+
+### Prioritization
+
+As our sysadmins often experience high workload, installation requests are handled according to the priorities below:
+
+- **Priority 1 (high):** Software installable via the <a href="https://docs.easybuild.io/" class="external text" rel="nofollow">EasyBuild</a> framework is given first priority because it typically requires minimal or moderate admin effort. A complete catalogue of supported packages (including a large collection of research software) is available <a href="https://docs.easybuild.io/version-specific/supported-software/" class="external text" rel="nofollow">here</a>.
+- **Priority 2 (medium):** Software not available through EasyBuild but essential to multiple NU HPC users.
+- **Priority 3 (low):** Software not available through EasyBuild that requires complex, time-consuming installation and is expected to be used infrequently by a single user or a small group.
+
+## Modules system
+
+
+In Linux environment variables are values that can change and impact how programs behave on a computer system. They are name-value pairs that all processes can access within a particular user environment or shell session. These variables provide a flexible and convenient method for managing system-wide settings, configuring applications, and customizing system behavior.
+
+Shabyt uses modules system (also known as Lmod) to dynamically set up environment variables for different software. Module commands set, change, or delete environment variables that are needed for a particular software. The `module load` command will set `PATH`, `LD_LIBRARY_PATH` and other environment variables such that user may choose a desired version of applications or libraries more easily. More details can be found here.
+
+|                                         |                                                                |
+|-----------------------------------------|----------------------------------------------------------------|
+| Command                                 | Description                                                    |
+| module avail                            | List of available software                                     |
+| module keyword \[word\]                 | Search for available modules matching the keyword              |
+| module spider \[word\]                  | Show the details of any modules matching the keyword           |
+| module whatis \[module\]                | Show the short description about module                        |
+| module load \[package1\] \[package2\]   | Load the environment for the default version of the modulefile |
+| module load \[package\]/\[version\]     | Load the environment for the specified version of module       |
+| module unload \[package1\] \[package2\] | Unload previously loaded packages                              |
+| module swap \[moduleA\] \[moduleB\]     | Unload modulefile A and load modulefile B                      |
+| module list                             | List any currently loaded module(s)                            |
+| module purge                            | Unload all currently loaded modules                            |
+
+Environment module commands
+
+
+**Using `module avail`**
+
+To see what modules you can load into your environment, enter the command `module avail`.
+
+
+    [hpcadmin@ln01 ~]$ module avail
+
+    ----------------------------------------------------------------------------- /shared/opt/easybuild/modules/all -----------------------------------------------------------------------------
+       AMD-uProf/3.5.671                                       PLUMED/2.7.3-foss-2021b                                          help2man/1.49.3-GCCcore-12.3.0
+       AOCC/4.0.0-GCCcore-12.2.0                               PMIx/3.1.5-GCCcore-9.3.0                                         help2man/1.49.3-GCCcore-13.2.0          (D)
+       ATK/2.38.0-GCCcore-11.3.0                               PMIx/3.2.3-GCCcore-10.3.0                                        hwloc/2.2.0-GCCcore-9.3.0
+       Anaconda3/2022.05                                       PMIx/4.1.0-GCCcore-11.2.0                                        hwloc/2.2.0-GCCcore-10.2.0
+       Autoconf/2.69-GCCcore-9.3.0                             PMIx/4.1.2-GCCcore-11.3.0                                        hwloc/2.4.1-GCCcore-10.3.0
+       Autoconf/2.69-GCCcore-10.2.0                            PMIx/4.2.2-GCCcore-12.2.0                                        hwloc/2.5.0-GCCcore-11.2.0
+       Autoconf/2.71-GCCcore-10.3.0                            PMIx/4.2.6-GCCcore-13.2.0                               (L,D)    hwloc/2.7.1-GCCcore-11.3.0
+       Autoconf/2.71-GCCcore-11.2.0                            PROJ/8.0.1-GCCcore-10.3.0                                        hwloc/2.8.0-GCCcore-12.2.0
+       Autoconf/2.71-GCCcore-11.3.0                            PROJ/9.0.0-GCCcore-11.3.0                               (D)      hwloc/2.9.2-GCCcore-13.2.0              (L,D)
+       Autoconf/2.71-GCCcore-12.2.0                            Pango/1.48.5-GCCcore-10.3.0                                      hypothesis/6.13.1-GCCcore-10.3.0
+       Autoconf/2.71-GCCcore-12.3.0                            Pango/1.48.8-GCCcore-11.2.0                                      hypothesis/6.14.6-GCCcore-11.2.0
+       Autoconf/2.71-GCCcore-13.2.0                   (D)      Pango/1.50.7-GCCcore-11.3.0                             (D)      hypothesis/6.46.7-GCCcore-11.3.0        (D)
+
+
+To unload all your loaded modules, enter the command `module purge`. Then `module list` will return `No modules loaded`.
+
+
+**Using `module spider`**
+
+If you know the name of a software package, you can use the `module spider`command to find out if it is available and how to load it.
+
+For example, to search for Python modules:
+
+
+    [hpcadmin@ln01 ~]$ module spider python
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      Python:
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        Description:
+          Python is a programming language that lets you work more quickly and integrate your systems more effectively.
+
+         Versions:
+            Python/2.7.18-GCCcore-11.3.0-bare
+            Python/3.8.6-GCCcore-10.2.0
+            Python/3.9.5-GCCcore-10.3.0-bare
+            Python/3.9.5-GCCcore-10.3.0
+            Python/3.9.6-GCCcore-11.2.0-bare
+            Python/3.9.6-GCCcore-11.2.0
+            Python/3.10.4-GCCcore-11.3.0-bare
+            Python/3.10.4-GCCcore-11.3.0
+            Python/3.11.3-GCCcore-12.3.0
+            Python/3.11.5-GCCcore-13.2.0
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      For detailed information about a specific "Python" package (including how to load the modules) use the module's full name.
+      Note that names that have a trailing (E) are extensions provided by other modules.
+      For example:
+
+         $ module spider Python/3.11.5-GCCcore-13.2.0
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+This shows that there are multiple versions of Python available.
+
+For more specific information, add the version to your command as given in the example:
+
+
+    [hpcadmin@ln01 ~]$ module spider Python/3.11.5-GCCcore-13.2.0
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      Python: Python/3.11.5-GCCcore-13.2.0
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        Description:
+          Python is a programming language that lets you work more quickly and integrate your systems more effectively.
+
+
+        This module can be loaded directly: module load Python/3.11.5-GCCcore-13.2.0
+
+        Help:
+
+          Description
+          ===========
+          Python is a programming language that lets you work more quickly and integrate your systems
+           more effectively.
+
+
+          More information
+          ================
+           - Homepage: https://python.org/
+
+
+          Included extensions
+          ===================
+          flit_core-3.9.0, packaging-23.2, pip-23.2.1, setuptools-68.2.2, setuptools-
+          scm-8.0.4, tomli-2.0.1, typing_extensions-4.8.0, wheel-0.41.2
+
+
+**Using `module keyword`**
+
+If you do not know the exact name of a software package, you can use the `module keyword`command instead to search for modules.
+
+
+    [hpcadmin@ln01 ~]$ module keyword python
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    The following modules match your search criteria: "python"
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      Anaconda3: Anaconda3/2022.05
+        Built to complement the rich, open source Python community, the Anaconda platform provides an enterprise-ready data analytics platform that empowers companies to adopt a modern
+        open data science analytics architecture.
+
+
+      Python: Python/2.7.18-GCCcore-11.3.0-bare, Python/3.8.6-GCCcore-10.2.0, Python/3.9.5-GCCcore-10.3.0-bare, Python/3.9.5-GCCcore-10.3.0, Python/3.9.6-GCCcore-11.2.0-bare, ...
+        Python is a programming language that lets you work more quickly and integrate your systems more effectively.
+
+
+**Loading and unloading software**
+
+Typically, loading modules is as simple as entering `module load <software_name>`. The `<software_name>`must be visible when you run `module avail`. Lmod will set your environment such that the software specified in `<software_name>`will be placed in your `PATH`, and then you can run the commands associated with `<software_name>`. If there are multiple versions of `<software_name>`, you can specify a version. For example:
+
+
+    [hpcadmin@ln01 ~]$ module load GCC
+    [hpcadmin@ln01 ~]$ module list
+
+    Currently Loaded Modules:
+      1) GCCcore/13.2.0   2) zlib/1.2.13-GCCcore-13.2.0   3) binutils/2.40-GCCcore-13.2.0   4) GCC/13.2.0
+
+
+    [hpcadmin@ln01 ~]$ module load GCC/11.3.0
+
+    The following have been reloaded with a version change:
+      1) GCC/13.2.0 => GCC/11.3.0             3) binutils/2.40-GCCcore-13.2.0 => binutils/2.38-GCCcore-11.3.0
+      2) GCCcore/13.2.0 => GCCcore/11.3.0     4) zlib/1.2.13-GCCcore-13.2.0 => zlib/1.2.12-GCCcore-11.3.0
+
+    [hpcadmin@ln01 ~]$ module list
+
+    Currently Loaded Modules:
+      1) GCCcore/11.3.0   2) zlib/1.2.12-GCCcore-11.3.0   3) binutils/2.38-GCCcore-11.3.0   4) GCC/11.3.0
+
+
+If no version is specified, then the default version will be loaded. The default version is indicated with a `(D)`next to it after running `module avail`.
+
+To unload a specific module, enter:
+
+    [hpcadmin@ln01 ~]$ module unload GCC/11.3.0
+
+<a href="https://lmod.readthedocs.io/en/latest/" class="external text" rel="nofollow">Official Page</a>
+
+## Short guides on using some popular software packages
+
+
+### Anaconda
+
+
+**Description**: Anaconda, also known as "conda," is a tool for managing Python packages. It helps you create virtual environments for different Python and package versions. You can use Anaconda to install, remove, and update packages within your project environments. For instance you can create virtual environment for game development which requires Pygame with old version of Python and you can create environment for machine learning which requires Pytorch with new version of Python.
+
+**Usage:** module load Anaconda3/2022.05
+
+**Distributions**
+
+Quite often, the package manager is not distributed on its own, but with a set of packages that are required for the package manager to work, or even with some additional packages that required for most applications. For instance, the conda package manager is distributed with the Miniconda and Anaconda distributions. Miniconda contains the bare minimum packages for the conda package manager to work, and Anaconda contains multiple commonly used packages and a graphical user interface. The relation between these distributions and the package manager is depicted in the following diagram.
+
+<figure class="mw-halign-center" typeof="mw:File">
+<a href="https://hpc.nu.edu.kz/index.php/File:Miniconda-vs-Anaconda.jpg" class="mw-file-description"><img src="../../assets/images/Miniconda-vs-Anaconda.jpg" decoding="async" width="546" height="307" /></a>
+</figure>
+
+**Channels**
+
+Conda <a href="https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/channels.html#what-is-a-conda-channel" class="external text" rel="nofollow">channels</a> are the locations where packages are stored. There are also multiple channels, with some important channels being:
+
+- `defaults`, the default channel,
+- `anaconda`, a mirror of the default channel,
+- `bioconda`, a distribution of bioinformatics software
+- `conda-forge`, a community-led collection of recipes, build infrastructure, and distributions for the conda package manager.
+
+The most useful channel that comes pre-installed in all distributions, is Conda-Forge. Channels are usually hosted in the official Anaconda page, but in some rare occasions <a href="https://conda.io/projects/conda/en/latest/user-guide/tasks/create-custom-channels.html" class="external text" rel="nofollow">custom channels</a> may be used. For instance the default channel is hosted independently from the official Anaconda page. Many channels also maintain web pages with documentation both for their usage and for packages they distribute:
+
+- <a href="https://docs.anaconda.com/working-with-conda/reference/default-repositories/" class="external text" rel="nofollow">Default Conda channel</a>
+- <a href="https://bioconda.github.io/" class="external text" rel="nofollow">Bioconda</a>
+- <a href="https://conda-forge.org/" class="external text" rel="nofollow">Conda-Forge</a>
+
+**Working with Anaconda environments**
+
+Below is a list of main commands you should use in order to start working with Anaconda.
+
+1.  To Check available environments, please type: `conda env list`
+2.  View a list of packages in an environment
+    - If the environment is not activated, please type: `conda list -n virtualenv`
+    - If the environment is activated, then type: `conda list`
+3.  Create Conda environment
+    - Create an environment: `conda create -n virtualenv`
+    - Create an environment with a specific Python version: `conda create -n virtualenv python=3.12`
+    - Create an environment to target directory: `conda create -p /shared/home/{username}/.conda/envs/virtualenv`
+4.  Activate an environment: `source activate virtualenv`
+5.  Deactivate an environment: `conda deactivate`
+6.  Remove an environment
+
+`conda remove -n virtualenv --all` or `conda env remove -n virtualenv`
+
+**Working with packages**
+
+Install packages into *virtualenv* environment
+
+- If the environment is not activated, please type: `conda --name virtualenv install PACKAGENAME`
+- If the environment is activated, please type: `conda install PACKAGENAME`
+- If you want to install multiple packages at once: `conda install pkg1 pkg2 pkg3`
+- If you need to install package with specific version: `conda install numpy=1.15.2`
+
+**External links**
+
+<a href="https://docs.conda.io/projects/conda/en/latest/" class="external text" rel="nofollow">Documentation</a>
+
+<a href="https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html" class="external text" rel="nofollow">User Guide</a>
+
+<a href="https://www.youtube.com/watch?v=23aQdrS58e0" class="external text" rel="nofollow">Video</a>
+
+<a href="https://docs.conda.io/projects/conda/en/4.6.0/_downloads/52a95608c49671267e40c689e0bc00ca/conda-cheatsheet.pdf" class="external text" rel="nofollow">Conda Cheat Sheet</a>
+
+
+### CUDA
+
+
+**Description**: CUDA (Compute Unified Device Architecture) is a parallel computing platform and application programming interface (API) model created by NVIDIA. It allows software developers to use a CUDA-enabled graphics processing unit (GPU) for general purpose processing, an approach known as General Purpose GPU (GPGPU) computing.
+
+**Usage:** module load cuda/11.4.1
+
+**Executables**
+
+nvcc
+
+nvidia-smi
+
+**Monitoring GPU**
+
+You can check the available GPUs, their current usage, installed version of the nvidia drivers, and more with the command nvidia-smi. Either in an interactive job or after connecting to a node running your job with ssh, `nvidia-smi` output should look something like this:
+
+
+    [hpcadmin@gn01 ~]$ nvidia-smi
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 460.32.03    Driver Version: 460.32.03    CUDA Version: 11.2     |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  GeForce GTX 108...  On   | 00000000:02:00.0 Off |                  N/A |
+    | 23%   34C    P8     9W / 250W |      1MiB / 11178MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID   Type   Process name                             Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+
+
+### Gaussian
+
+
+Gaussian is a widely used computational chemistry software for electronic structure modeling. It allows researchers to perform quantum chemical calculations, including molecular geometry optimizations, electronic energy calculations, vibrational frequency analysis, and reaction modeling. Gaussian supports various quantum mechanical methods such as Hartree-Fock (HF), Density Functional Theory (DFT), and post-HF methods. It is commonly used in academic and industrial research for simulating molecular interactions and predicting chemical properties. This guide explains how to use Gaussian on the cluster and includes sample SLURM scripts for submitting jobs.
+
+**Loading Gaussian G16**
+
+1\. Ensure the Gaussian module is available by loading the appropriate module:
+
+
+      module load gaussian/g16
+
+
+2\. Verify the Gaussian version loaded:
+
+
+      g16 -version
+
+
+**Setting Up the Scratch Directory**
+
+Gaussian uses a scratch directory for temporary files. Set the scratch directory to your home directory:
+
+
+    export GAUSS_SCRDIR=$HOME/scratch
+
+
+Ensure the directory exists:
+
+
+    mkdir -p $GAUSS_SCRDIR
+
+
+**Sample Gaussian Input File**
+
+Create a Gaussian input file named \`input.com\` with the following content as an example:
+
+
+    %NProcShared=4
+    %Mem=8GB
+    %Chk=input.chk
+    #p HF/6-31G(d) Opt
+
+    Sample Gaussian Job
+
+    0 1
+    H
+
+
+**Running Gaussian Interactively**
+
+You can run Gaussian interactively using:
+
+` g16 < input.com > input.log `
+
+**Submitting a Gaussian Job with SLURM**
+
+To run Gaussian on the cluster using SLURM, create a batch script \`gaussian_job.slurm\`:
+
+
+    #!/bin/bash
+    #SBATCH --job-name=gaussian_job
+    #SBATCH --output=gaussian_job.log
+    #SBATCH --error=gaussian_job.err
+    #SBATCH --partition=CPU
+    #SBATCH --nodes=1
+    #SBATCH --ntasks=1
+    #SBATCH --cpus-per-task=4
+    #SBATCH --mem=8GB
+    #SBATCH --time=14-00:00:00
+
+
+1.  Load Gaussian module
+
+
+    module load gaussian/g16
+
+
+1.  Set scratch directory
+
+
+    export GAUSS_SCRDIR=$HOME/scratch
+    mkdir -p $GAUSS_SCRDIR
+
+
+1.  Run Gaussian
+
+
+    srun g16 < input.com > input.log
+
+
+**Choosing the Right Partition**
+
+Depending on your resource requirements, specify the appropriate SLURM partition:
+
+CPU Partition: Use \`--partition=CPU\` for general CPU jobs. GPU Partition: Use \`--partition=NVIDIA\` for GPU-enabled jobs. Ensure Gaussian supports GPU acceleration for your input file.
+
+Example for the GPU partition:
+
+
+1.  SBATCH --partition=NVIDIA
+2.  SBATCH --gres=gpu:1
+
+**Checking SLURM Node Status**
+
+To view available nodes and their status:
+
+
+    sinfo
+
+
+Partition details from the cluster:
+
+
+    PARTITION AVAIL  TIMELIMIT  NODES  STATE NODELIST
+    CPU*         up 14-00:00:0      3  down* cn[03,12,19]
+    CPU*         up 14-00:00:0      1    mix cn14
+    CPU*         up 14-00:00:0     16  alloc cn[01-02,04-11,13,15-18,20]
+    NVIDIA       up 2-00:00:00      2  alloc gn[01,03]
+    NVIDIA       up 2-00:00:00      2   idle gn[02,04]
+
+
+Ensure you select an available node for your job. For NVIDIA partition, choose idle nodes (e.g., \`gn\[02,04\]\`).
+
+**Submitting the SLURM Job**
+
+Submit the job with:
+
+
+    sbatch gaussian_job.slurm
+
+
+Monitor the job status:
+
+
+    squeue -u $USER
+
+
+**Additional Notes**
+
+\- Adjust \`--cpus-per-task\`, \`--mem\`, and \`--time\` based on your input file's requirements. - Ensure your input file, checkpoint file, and any other dependencies are in the submission directory. - Check output and error files (\`gaussian_job.log\` and \`gaussian_job.err\`) for troubleshooting.
+
+For further details, consult the Gaussian G16 documentation or your cluster administrator.
+
+
+### GCC
+
+
+The GNU Compiler Collection, commonly known as GCC, is a set of compilers and development tools available for Linux, Windows, various BSDs, and a wide assortment of other operating systems. It includes support primarily for C and C++ and includes Objective-C, Ada, Go, Fortran, and D. The Free Software Foundation (FSF) wrote GCC and released it as completely free (as in libre) software.
+
+GCC is a toolchain that compiles code, links it with any library dependencies, converts that code to assembly, and then prepares executable files. It follows the standard UNIX design philosophy of using simple tools that perform individual tasks well. The GCC development suite utilizes these discrete tools to compile software.
+
+When you run GCC on a source code file, it first uses a preprocessor to include header files and discard comments. Next, it tokenizes the code, expands macros, detects any compile-time issues, then prepares it for compilation. It is then sent to the compiler, which creates syntax trees of the program’s objects and control flow and uses those to generate assembly code. The assembler then converts this code into the binary executable format of the system. Finally, the linker includes references to any external libraries as needed. The finished product is then executable on the target system.
+
+**GCC examples**
+
+Compiling a program with GCC can be a straightforward matter
+
+`gcc hello.c -o hello`
+
+Running this command processes the hello.c file and generates a binary called “hello”.
+
+Additional parameters can be passed.
+
+`gcc hello.c -O3 -o hello`
+
+In this example, the optimization parameter is set to 3, leading to more optimized code generation.
+
+More complex compilations are managed by *Makefiles* and are invoked with the “make” command.
+
+**External link**
+
+<a href="https://gcc.gnu.org/" class="external text" rel="nofollow">Official Page</a>
+
+### GFortran
+
+GNU Fortran implements the Fortran 77, 90 and 95 standards completely, most of the Fortran 2003 and 2008 standards, and some features from the 2018 standard. It also implements several extensions including OpenMP and OpenACC support for parallel programming.GCC is a toolchain that compiles code, links it with any library dependencies, converts that code to assembly, and then prepares executable files. It follows the standard UNIX design philosophy of using simple tools that perform individual tasks well. The GCC development suite utilizes these discrete tools to compile software. GNU Fortran is a part of GCC, the GNU Compiler Collection.
+
+**GNU Fortran examples**
+
+Simple example of compiling and getting an executable file
+
+`gfortran hello.f90 -o hello`
+
+Allows using a large list of options for gfortan. It is recommended to use the following options for optimization
+
+`gfortran -march=native -ffast-math -O3 hello.f90 -o hello`
+
+Sometimes using -fopenmp (enable OpenMP support) and -fstack-arrays (places arrays into stack memory, may be limited by OS settings)
+
+gfortran also supports a wide range of runtime flags and variables. These are typically used in Makefiles or bash scripts. More complex compilations are managed by Makefiles and are invoked with the “make” command.
+
+**External link**
+
+<a href="https://gcc.gnu.org/onlinedocs/gfortran.pdf" class="external text" rel="nofollow">Short reference to GNU Fortran</a>
+
+
+### Git
+
+
+**This section is under construction**
+
+**Description**: Git is an open-source version control system primarily used for software development.
+
+From a user perspective, the workflow is divided into two stages: first, there are the changes you make to your local copy of the project. This local copy is called the *local repository*. Then, there is also the *remote repository* to which the contributors *push*, i.e., upload, their changes or *pull* the current version of the project. The main advantage is that all contributors can work on their part of the project simultaneously and *merge* their changes later on.
+
+The changes are organized as *commits*. Whenever you feel that you have reached a certain goal, e.g. you fixed a bug or implemented a new feature, you should commit your changes. It is good practice to make only few changes per commit.
+
+You can also organize the work in *branches*, where each branch has it's own timeline of commits. One branch can be branched from another, copying the state of the branch at this specific point. From then on, they can be worked on independently. Branches can later be merged again. This feature is used e.g., if a new feature is implemented in your project. Then, you would create a new branch where this feature is developed and merge it into the master branch as soon as the development is finished.
+
+**Creating a Repository**
+
+Before you can start using git productively, you will have to create a git repository first. You can create a git repository using a hosting service of your choice. GitHub is a free and popular hosting service. It provides you with a powerful web interface and rights management, so that you can control who can access or make changes to your project. It might become necessary that you generate an SSH key to prove your identity when you access the remote repository.
+
+**Basic Usage**
+
+When you want to start working with your repository, you will have to clone it to your machine first. Hosting services usually provide a button labeled 'clone' from which you can copy the repository's URL.
+
+    [hpcadmin@ln01 ~]$ git clone https://github.com/MyRepository.git
+
+Assuming that your repository is called MyRepository, git will automatically create a directory with this name and download all files in this repository to your machine.
+
+If you already cloned your repository to your machine and you want to start working after a break, you should pull from the remote repository. This will ensure that you have the most recent changes on your machine when you start working.
+
+    [hpcadmin@ln01 MyRepository]$ git pull
+
+Before you start working, when you are done with your work or if you want to commit your changes, it is a good idea to request the repository's status from git.
+
+    [hpcadmin@ln01 MyRepository]$ git status
+
+When you have worked on your source code and reached a point where you feel confident to commit your changes, you have to tell git which files you want to commit. Ask git for the repository status and it will give you a list of all files that have changed. Then, you can selectively *stage* files for your commit, i.e. add them to the list of files for your commit.
+
+    [hpcadmin@ln01 MyRepository]$ git add File0 [File1 ...]
+
+Always confirm that you have staged the correct files by taking a look at the status! If everything is correct, you can commit your changes and add a description of your changes.
+
+    [hpcadmin@ln01 MyRepository]$ git commit -m "Change everything."
+
+Git will confirm your commit and then you are ready to push your changes to the remote repository.
+
+    [hpcadmin@ln01 MyRepository]$ git push
+
+**Reference**
+
+<a href="https://git-scm.com/docs" class="external text" rel="nofollow">Git</a>
+
+<a href="https://about.gitlab.com/images/press/git-cheat-sheet.pdf" class="external text" rel="nofollow">Git cheatsheet</a>
+
+
+### Matlab
+
+
+**This section is under construction**
+
+**Description**: MATLAB is a programming environment for algorithm development, data analysis, visualization, and numerical computation. Using MATLAB, you can solve technical computing problems faster than traditional programming languages, such as C, C++, and Fortran.
+
+You can use MATLAB in various applications, including signal and image processing, communications, control design, test and measurement, financial modeling and analysis, and computational biology.
+
+**Usage**: module load matlab/r2022a
+
+**Environment variables**
+
+PATH                /shared/opt/matlab/r2022a:\$PATH
+
+LD_LIBRARY_PATH      /shared/opt/matlab/r2022a/extern/bin/glnxa64
+
+MLM_LICENSE_FILE    27000@ln01
+
+
+### LAMMPS
+
+
+LAMMPS (Large-scale Atomic/Molecular Massively Parallel Simulator) is a classical molecular dynamics code designed for simulating materials modeling at atomic, mesoscopic, or continuum scales. It is widely used for studying solid-state physics, soft matter, and materials engineering.
+
+**You can use LAMMPS for simulating:**
+
+- Atomic
+- Polymeric
+- Biological
+- Metallic
+- Granular
+- Coarse-grained systems
+
+**Usage**
+
+    module load LAMMPS/23Jun2022-foss-2021b-kokkos-CUDA-11.4.1
+
+**Environment variables**
+
+- **PATH**: `/shared/opt/easybuild/software/LAMMPS/23Jun2022/bin:$PATH`
+- **LD_LIBRARY_PATH**: `/shared/opt/easybuild/software/LAMMPS/23Jun2022/lib:$LD_LIBRARY_PATH`
+- **LAMMPS_EXECUTABLE**: `lmp`
+
+**How to Run LAMMPS on Shabyt Cluster**
+
+1.  **Load Required Modules**
+
+Use the following commands to load the necessary modules:
+
+`module load LAMMPS/23Jun2022-foss-2021b-kokkos-CUDA-11.4.1`
+
+`module load GCC/11.2.0`
+
+`module load OpenMPI/4.1.1`
+
+- **Run LAMMPS**
+
+**Serial Mode**
+
+To execute LAMMPS using a single core:
+
+Bash
+
+    lmp < input_file.in
+
+**Parallel Mode**
+
+To execute LAMMPS using MPI for parallel processing:
+
+Bash
+
+    mpirun -np 16 lmp < input_file.in
+
+- **SLURM Job Script for LAMMPS**
+
+Here is an example SLURM job submission script for running LAMMPS on multiple nodes:
+
+    #!/bin/bash
+    #SBATCH --job-name=lammps_job  # Job name
+    SBATCH --nodes=2           # Number of nodes
+    SBATCH --ntasks-per-node=16  # Number of tasks (cores) per node
+    SBATCH --time=01:00:00     # Max runtime (HH:MM:SS)
+    SBATCH --partition=CPU # Partition/queue to run the job
+
+    module load LAMMPS/23Jun2022-foss-2021b-kokkos-CUDA-11.4.1
+    module load GCC/11.2.0
+    module load OpenMPI/4.1.1
+
+    mpirun -np 32 lmp < input_file.in  # Run LAMMPS on 32 processes
+
+To submit the job:
+
+    sbatch submit_lammps.sh
+
+- **Example LAMMPS Input Script**
+
+Below is a basic example of a LAMMPS input script:
+
+    units metal
+    dimension 3
+    boundary p p p
+    atom_style atomic
+    read_data data_file.data
+    pair_style eam
+    pair_coeff * * Cu_u3.eam
+    velocity all create 300.0 12345
+    fix 1 all nve
+    timestep 0.001
+    run 10000
+
+Adapt this script to meet the specific requirements of your simulation, such as atom styles, boundary conditions, and pair potentials.
+
+1.  **Monitoring and Analysis**
+
+- **Job Output**: Check the output files (e.g., `slurm-123456.out`) to monitor job progress and output logs.
+- **Post-Processing**: Tools like OVITO or LAMMPS' built-in analysis functions can be used for visualizing and analyzing simulation data.
+
+1.  **Troubleshooting**
+
+- **Library Errors**: Ensure all required modules and libraries, such as FFTW and MPI, are loaded correctly.
+- **Resource Allocation**: Verify that your requested resources (nodes, cores) match your computational needs for optimal performance.

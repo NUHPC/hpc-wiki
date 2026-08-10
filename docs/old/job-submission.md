@@ -1,0 +1,386 @@
+# Job Submission
+
+<div class="snapshot-banner">
+Original wording normalized from <strong>Job Submission - NU HPC Wiki.mhtml</strong>, saved on 4 August 2026. Commands and limits on this page are historical and may be incorrect.
+</div>
+
+NU HPC clusters use the **SLURM workload manager** to schedule, distribute, and execute user jobs. SLURM (an acronym for *Simple Linux Utility for Resource Management*) is free and open-source software used by many — if not most — large HPC facilities worldwide. Therefore, if you have previously run research calculations at another HPC center, it should be relatively easy to migrate your jobs and start using NU HPC clusters. On a login node, users arrange their data, write batch scripts, and submit jobs to the execution queue. Submitted jobs enter a pending state until the requested system resources become available. SLURM then schedules each job according to site policies designed to balance competing user needs and maximize efficient use of cluster resources.
+
+Absolutely *all* computational tasks on NU HPC clusters (except compiling and very short test runs that use one or only a few cores) must be executed through SLURM, which distributes them across the system in an optimal way. **It is extremely important that users do not overload the management/login node** (`access` on Irgetas; `ln01` on Shabyt; `mln01` on Muon) by running long or resource-intensive calculations interactively or in the background. The management node’s function is limited to compiling binaries, transferring data, managing files, preparing input for calculations, and submitting jobs. **It is *not* a workhorse for heavy computations.**
+
+For a comprehensive guide on SLURM, refer to its <a href="https://slurm.schedmd.com/" class="external text" rel="nofollow">official website</a>. A short printable cheat sheet of useful SLURM commands and parameters is also available <a href="https://slurm.schedmd.com/pdfs/summary.pdf" class="external text" rel="nofollow">here</a>. Below, we will explain how jobs should be submitted for execution on NU HPC systems and provide some basic examples.
+
+
+## Partitions, QoS, and job limits
+
+Each job’s position and progress in the queue is determined by SLURM's *fairshare algorithm*, which takes into account multiple factors (e.g., job size, requested runtime, queuing time, partition, QoS, etc.). For detailed information on available partitions, Quality of Service (QoS), maximum job durations, and limits on the number of simultaneously running jobs and CPU cores, please refer to the corresponding sections on the [Policies](https://hpc.nu.edu.kz/index.php/Policies "Policies") page. Please note that these limits are subject to change.
+
+Keep in mind the following important rules:
+
+- Jobs cannot request a runtime that exceeds the maximum time limit defined in the policies. If a job requests more time than allowed, it may enter the queue but will remain in a *pending* state indefinitely until the requested time is corrected.
+- Requesting more RAM than is physically available will also result in the job remaining in a *pending* state indefinitely.
+- Users cannot exceed the CPU core limits defined by their QoS category.
+
+For example, if the CPU core limit for a given QoS is 256 cores and a user already has four jobs running, each using 64 cores, then any newly submitted job by the user will remain in the *pending* state. Even if physical resources are available, the scheduler will not start the new job until one or more of the currently running four jobs finish.
+
+### Most common and useful SLURM commands
+
+Below is a list of commonly used SLURM commands. Keep in mind that most commands support additional flags and arguments that extend their functionality. You can explore these options by appending the `--help` flag (e.g., `sbatch --help`) in the terminal.
+
+|                                                                     |                                                                                                                                                                                                                                                                                                                                 |
+|---------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Command                                                             | Description                                                                                                                                                                                                                                                                                                                     |
+| `sbatch <script_file_name>`                                         | Submit a job using the specified script `<script_file_name>` (e.g. `myscript.slurm`).                                                                                                                                                                                                                                           |
+| `sbatch --test-only <script_file_name>`                             | Test the SLURM script for errors without submitting a job.                                                                                                                                                                                                                                                                      |
+| `scancel <job_id>`                                                  | Cancel a running or queued job by specifying its Job ID (a four or five digit number).                                                                                                                                                                                                                                          |
+| `squeue`                                                            | View the status of all user jobs in the queue, including their state (running, pending, etc.).                                                                                                                                                                                                                                  |
+| `squeue -u <user_name>`                                             | View the status of jobs by user `<user_name>` (e.g. john.smith).                                                                                                                                                                                                                                                                |
+| `squeue -l`                                                         | A longer output format for the `squeue` command.                                                                                                                                                                                                                                                                                |
+| `squeue -o "%.6i %.6P %.12j %.19u %.2t %.11M %.8Q %.5D %.4C %.11R"` | This is an example of even more detailed, user-defined, output format of `squeue`. To avoid typing such a long command each time in the terminal you can define an alias in your shell profile file `.bashrc`, by adding a line such as `alias mysqueu='( squeue -o "%.6i %.6P %.12j %.19u %.2t %.11M %.8Q %.5D %.4C %.11R" )'` |
+| `sinfo`                                                             | Display information about the cluster, including nodes, partitions, and their status.                                                                                                                                                                                                                                           |
+| `scontrol show job <job_id>`                                        | Show detailed information about a specific job.                                                                                                                                                                                                                                                                                 |
+| `squeue --start`                                                    | Estimate the start time for queued jobs.                                                                                                                                                                                                                                                                                        |
+| `sl`                                                                | Alias for squeue with detail info.                                                                                                                                                                                                                                                                                              |
+| `userquota`                                                         | Alias for disk space for user with short detail info.                                                                                                                                                                                                                                                                           |
+| `seff <job_id>`                                                     | Show job efficiency information for completed jobs.                                                                                                                                                                                                                                                                             |
+
+List of useful SLURM Commands
+
+## Sample SLURM batch scripts
+
+### Running a simple serial (single-threaded) job
+
+In this example we will prepare a submit a simple job that executes a serial Python program. For that we will first create directory called `test_serial` inside our home directory with a full path `/shared/home/<your.name>/test_serial`. It is always advisable to run each job in a separate directory to avoid confusion and mix up files.
+
+Now let us enter directory `test_serial` and create a short Python script called `my_python_script.py`. When executed, this script prints a "Hello, world!" message once a second for one minute before it completes.
+
+
+    import time
+
+    nsec=60
+
+    for i in range(1, nsec+1):
+        print(f"{i}: Hello, world!")
+        time.sleep(1)
+
+
+Now let us create a SLURM script (we will use `bash` for this) called `batch_serial.slurm` with the following content:
+
+
+    #!/bin/bash
+
+    # ---------------------------------------------------
+    # Directives section that requests specific resources
+    # ---------------------------------------------------
+
+    #SBATCH --job-name=MySerialJob           # Your job's name
+    #SBATCH --time=0-2:00:00                 # Time requested: 0 days + 2 hours + 0 minutes + 0 seconds
+    #SBATCH --mem=1G                         # Memory requested: 1 Gigabyte
+    #SBATCH --ntasks=1                       # Run a single task
+    #SBATCH --partition=CPU                  # Specify partition name
+    #SBATCH --output=stdout%j.out            # Specify file name for standard screen output
+    #SBATCH --error=stderr%j.out             # Specify file name for error messages
+    #SBATCH --mail-type=END,FAIL             # Specify when automatic email notification should be sent
+    #SBATCH --mail-user=your.name@nu.edu.kz  # Specify your email address where notifications are sent
+
+    # ---------------------------------------------------
+    # Your code section
+    # ---------------------------------------------------
+
+    # Load a module with a specific Python version. Technically, this is not required for our example
+    # because the operating system default Python is already available in all compute nodes of Shabyt
+    # without loading anything. However, we will do it here for illustrative purposes.
+
+    module load Python/3.11.5-GCCcore-13.2.0
+
+    # Below we will execute our Python program. By default, SLURM will execute the commands
+    # that appear in this batch script in the same directory where this script was submitted
+    # from with sbatch. However, if needed, in this script you can go to some specific
+    # directory, or use a full path to your Python program. Moreover, if you wish, you could
+    # define your own Unix shell variables, copy or move files, have loops or conditional statements,
+    # execute shell commands, etc. -- i.e. do anything that one can do in a Unix shell script in
+    # order to pre-process and post-process your files and data. In this example we simply execute
+    # our Python program using Python 3 in the current directory.
+
+    python3 ./my_python_script.py
+
+
+We can now submit our job from the terminal by typing `sbatch batch_serial.slurm`. If everything goes well and the task is accepted by SLURM, you should see a confirmation message, e.g. `Submitted batch job XXXXX` , where `XXXXX` is the ID assigned to your job. You can check the queue to see whether your job is executed immediately or is placed in a queue (pending status). For this you can type, e.g. `squeue --me` in the terminal. If your job started execution it should finish within just one minute, because this is how we designed our example Python program. After the job execution is complete, it will no longer appear in the list of jobs that you see with the `squeue` command. In the end you will find two files in directory `test`. These are `stderrXXXXX.out` and `stdoutXXXXX.out`. The first one should normally be empty, unless there were errors or exceptions during the execution. The second one contains the standard screen output, i.e. all sixty "Hello, world!" messages are printed there. If you do not wish that new unique files `stderrXXXXX.out` and `stdoutXXXXX.out` are created each time a job is submitted and executed, you can change the names `stdout%j.out` and `stderr%j.out` in the batch script with something more generic, e.g. `myoutput.out`, which will be overwritten upon each new execution.
+
+Note that the maximum time we requested for our job in the above SLURM script was 2 hours. It the batch script finishes sooner than in 2 hours after it begins execution then the job is terminated automatically. SLURM will then go ahead and use the freed resources for some other job in the queue. If the execution of the batch script is not finished within the time that is requested then the job is forced to terminate. If you perform long calculations and do not save intermediate data it produces then you must set the max time long enough so that it suffices to complete the task. On the other hand, setting the max time to be much longer than you actually need might sometimes increase the wait time of your job in the queue. Thus users must use reasonable judgement when they set max time for their jobs. It also applies to other parameters/resources, such as the amount of memory. Requesting too little memory may cause your job's premature death, while requesting too much (e.g. request 100 GB while your program actually needs only 100 kB) may increase the wait time in the queue. Requesting too much memory may also prevent SLURM from starting jobs submitted by other users due to the reduced amount of memory available for them. Again, users need to use reasonable judgement when they request resources (time, memory, CPU cores, etc) for their jobs.
+
+In the above example we set that the default output goes to the file called `stdoutXXXXX.out` (`%j` in line `#SBATCH --output=stdout%j.out` will be substituted by the unique Job ID assigned to your job by SLURM - a four or five digit number). In case if different parts of your batch script code need to output to different files you can always use redirection, e.g. you could have something like this in your batch script:
+
+
+    python3 ./my_python_script_1.py > output_file_1.txt
+    python3 ./my_python_script_2.py > output_file_2.txt
+
+
+The above batch script example contains a directive `#SBATCH --mail-type=END,FAIL`. It tells SLURM that the user should be sent an automatic email in the event if the job ends normally or fails during the execution. This is handy if you do not want to sit by a computer and constantly check the status of your calculations. If you also would like to be notified about the job start (could be useful if your job waits in a queue for a long time before SLURM executes it) then you can use the directive `#SBATCH --mail-type=BEGIN,END,FAIL` instead. The email address where the messages are sent is given in the next line of the batch script, `#SBATCH --mail-user=your.name@nu.edu.kz` (do not forget to replace it with your actual email).
+
+### Running an SMP parallel job
+
+SMP (Symmetric Multiprocessing) parallelism is a form of parallel computing where multiple processors (or CPU cores) share a single, common memory space and work together to perform tasks. For example, in Shabyt cluster, each node (i.e. server) has two 32-core CPUs. Each core, in turn, can simultaneously run up to two threads. So overall, one can run an application on such a node using up to 2 x 32 x 2 = 128 parallel threads. Note that SMP parallelism does not extend to multiple nodes. Different nodes do not share memory. Therefore 128 parallel threads is a hard limit for SMP jobs executed in Shabyt cluster.
+
+OpenMP (Open Multi-Processing) is widely used in scientific and engineering applications to facilitate SMP parallelism in multi-core CPUs by dividing tasks among threads. OpenMP is an API that supports multi-platform shared-memory parallel programming in C, C++, and Fortran. It allows developers to write parallel code easily by adding compiler directives (pragmas) that instruct the compiler which parts of the code should run in parallel and how exactly it should be done.
+
+In the following example we will create a C program that will be compiled and then executed using a suitable batch script. Let us create a directory called `test_smp`. Inside that directory create a file called `my_smp_program.c` containing the following C code:
+
+
+    #include <stdio.h>
+    #include <omp.h>
+
+    /* This program uses multiple threads to compute the sum of squares of the
+    numbers ranging from 1 to n and. The result is printed on the screen. The
+    program also also prints the number of parallel threads that were executed. */
+
+    int main() {
+        int n = 100000000;    // n - Number of elements
+        long long sum = 0;    // sum - Result, we use long long type as the result may be very large
+
+        // Parallel region with OpenMP to print the number of threads
+        #pragma omp parallel
+        {
+            #pragma omp single  // Ensure only one thread prints the message
+            {
+                int num_threads = omp_get_num_threads();
+                printf("Number of threads used: %d\n", num_threads);
+            }
+        }
+
+        // Parallel region to calculate the sum of squares
+        #pragma omp parallel for reduction(+:sum)
+        for (int i = 1; i <= n; i++) {
+            sum += i * i;
+        }
+
+        printf("The sum of squares from 1 to %d is: %lld\n", n, sum);
+        return 0;
+    }
+
+
+First, we need to compile this program and generate an executable binary file. This can be done using any modern C compiler that supports OpenMP (such as `gcc`). While it would be perfectly ok to use the system default `gcc` compiler for this, for an illustrative purpose let us invoke a newer version of the GCC toolchain, GCC 13.2, which is available as a module on NU HPC clusters. The following terminal commands load the corresponding GCC module and then build a binary file:
+
+
+    module load GCC/13.2.0
+    gcc -O3 -fopenmp my_smp_program.c -o my_smp_program
+
+
+If everything goes well then an executable file called `my_smp_program` should appear in the same directory after the compilation. Let us then create a SLURM batch script called `batch_smp.slurm` that has the following content:
+
+
+    #!/bin/bash
+    #SBATCH --job-name=MySMPJob              # Your job's name
+    #SBATCH --time=0-0:30:00                 # Time requested: 0 days + 0 hours + 30 minutes + 0 seconds
+    #SBATCH --mem=1G                         # Memory requested: 1 Gigabyte
+    #SBATCH --nodes=1                        # Run on a single node
+    #SBATCH --ntasks=1                       # Run a single task
+    #SBATCH --cpus-per-task=128              # Request all 128 threads on the node
+    #SBATCH --partition=CPU                  # Specify partition name
+    #SBATCH --output=stdout%j.out            # Specify file name for standard screen output
+    #SBATCH --error=stderr%j.out             # Specify file name for error messages
+    #SBATCH --mail-type=END,FAIL             # Specify when automatic email notification should be sent
+    #SBATCH --mail-user=your.name@nu.edu.kz  # Specify your email address where notifications are sent
+
+    # Load module GCC 13.2
+    module load GCC/13.2.0
+
+    # Set the number of threads for OpenMP to match the cpus-per-task directive
+    export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
+
+    # Run the program
+    ./my_smp_program
+
+
+### Running an MPI parallel job
+
+Message Passing Interface (MPI) is a standardized and portable communication protocol designed for parallel computing. In the MPI paradigm multiple parallel processes can run on different hosts and communicate over the network by passing messages containing data. Each process has its own memory that is not accessible to other processes. MPI is designed to work across various platforms and architectures, making it widely used in high-performance computing. One of the most popular implementations is MPI is Open MPI (this name should not be confused with OpenMP).
+
+In the following example we will create a simple Fortran program that calls MPI library functions and executes in parallel on multiple nodes (servers).
+
+Let us create a directory called `test_mpi`. Inside that directory create a file called `my_mpi_program.f90` containing the following Fortran code:
+
+
+    program my_mpi_program
+        use mpi
+        implicit none
+
+        integer :: rank, num_procs, ierr, N, local_start, local_end
+        integer :: local_sum, global_sum, i
+
+        ! Predefined value of N (can be adjusted as needed)
+        N = 5555
+
+        ! Initialize MPI
+        call MPI_Init(ierr)
+        call MPI_Comm_rank(MPI_COMM_WORLD, rank, ierr)
+        call MPI_Comm_size(MPI_COMM_WORLD, num_procs, ierr)
+
+        ! Print the number of parallel MPI processes being executed
+        if (rank == 0) then
+            print *, "Running with", num_procs, "parallel MPI processes"
+        end if
+
+        ! Divide the range among processes
+        local_start = rank * (N / num_procs) + 1
+        local_end = min((rank + 1) * (N / num_procs), N)
+
+        if (rank == num_procs - 1) then
+            local_end = N  ! Last process takes any leftover elements
+        end if
+
+        ! Each process computes its local sum
+        local_sum = 0
+        do i = local_start, local_end
+            local_sum = local_sum + i
+        end do
+
+        ! Reduce the local sums to a global sum in process 0
+        call MPI_Reduce(local_sum, global_sum, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierr)
+
+        ! Process 0 prints the result
+        if (rank == 0) then
+            print *, "The sum of integers from 1 to", N, "is", global_sum
+        end if
+
+        call MPI_Finalize(ierr)
+    end program my_mpi_program
+
+
+This simple code computes the sum of numbers from 1 to 5555 and prints the result on the screen. It also prints the number of parallel processes that are being used for this task. To compile this program we will use the toolchain called `foss` (the name comes from Fully Open Source Software). Among many other things, the `foss/2023b` toolchain (available as a module on NU HPC systems) includes `gcc` and `gfortran` compilers version 13.2 and Open MPI library version 4.1.6. We will use the standard `mpif90` wrapper/compiler to compile the code as follows:
+
+
+    module load foss/2023b
+    mpif90 -O3 my_mpi_program.f90 -o my_mpi_program
+
+
+If everything goes well, the second command should generate a binary file called `my_mpi_program`. We can then create the following SLURM batch script to execute it in parallel using the `mpirun` command.
+
+
+    #!/bin/bash
+    #SBATCH --job-name=MyMPIJob              # Your job's name
+    #SBATCH --time=0-0:30:00                 # Time requested: 0 days + 0 hours + 30 minutes + 0 seconds
+    #SBATCH --mem-per-cpu=1G                 # Specify amount of memory per each MPI process
+    #SBATCH --nodes=3                        # Number of nodes requested
+    #SBATCH --ntasks=192                     # Total number of MPI processes (3 nodes × 64 cores per node)
+    #SBATCH --exclusive                      # Requested nodes can be used by your job only
+    #SBATCH --partition=CPU                  # Specify partition name
+    #SBATCH --output=stdout%j.out            # Specify file name for standard screen output
+    #SBATCH --error=stderr%j.out             # Specify file name for error messages
+    #SBATCH --mail-type=END,FAIL             # Specify when automatic email notification should be sent
+    #SBATCH --mail-user=your.name@nu.edu.kz  # Specify your email address where notifications are sent
+
+    # Load module foss/2023b that was used to build my_mpi_program binary
+    module load foss/2023b
+
+    # Set the number of parallel processes to match the ntasks directive
+    export NPROCS=$SLURM_NTASKS
+
+    # Run the program
+    mpirun -np $NPROCS ./my_mpi_program
+
+
+The above script requests that each node hosts 64 processes, so that the total number of parallel MPI processes across all three nodes is 192. There is an alternative way of launching parallel tasks within a SLURM-managed environment. Instead of the combination of two commands, `export NPROCS=$SLURM_NTASKS` and `mpirun -np $NPROCS ./my_mpi_program`, in the above batch script we could use a single command - `srun ./my_mpi_program`. The `srun` command integrates with SLURM (it is actually a part of it and is not available outside of SLURM-managed systems), handling resource allocation and task launching seamlessly. It simplifies running MPI tasks in SLURM by avoiding additional setup.
+
+Requesting memory for MPI jobs can be done with the `#SBATCH --mem=...` directive. In this case it would specify the total memory used by all parallel processes. However, in practice it is often more convenient to use the `#SBATCH --mem-per-cpu=...` directive, where the memory per single MPI parallel process is specified.
+
+Note that the directive `#SBATCH --exclusive` should be used only if your job is intended to use all CPU cores or essentially all physical memory available on each allocated node. Otherwise, please omit this directive for parallel jobs so that unused cores can be made available to other jobs. Also note that when `#SBATCH --exclusive` is used, SLURM counts all available cores on the allocated node(s) against your total core limit, even if your job actually uses fewer cores.
+
+### Running a job on GPUs
+
+Below is an example of a job that will use an Nvidia V100 GPU that is available in partition called NVIDIA in Shabyt cluster. It will run a CUDA program to compute a matrix-matrix multiplication. First, let us create a directory called `test_gpu`. In that directory, create a file called `my_cuda_program.cu` with the following content:
+
+
+    #include <cuda_runtime.h>
+    #include <iostream>
+
+    // CUDA kernel for matrix multiplication
+    __global__ void matMulKernel(float *A, float *B, float *C, int N) {
+        int row = blockIdx.y * blockDim.y + threadIdx.y;
+        int col = blockIdx.x * blockDim.x + threadIdx.x;
+
+        if (row < N && col < N) {
+            float sum = 0.0;
+            for (int i = 0; i < N; i++) {
+                sum += A[row * N + i] * B[i * N + col];
+            }
+            C[row * N + col] = sum;
+        }
+    }
+
+    void matMul(float *A, float *B, float *C, int N) {
+        float *d_A, *d_B, *d_C;
+        size_t size = N * N * sizeof(float);
+
+        cudaMalloc(&d_A, size);
+        cudaMalloc(&d_B, size);
+        cudaMalloc(&d_C, size);
+
+        cudaMemcpy(d_A, A, size, cudaMemcpyHostToDevice);
+        cudaMemcpy(d_B, B, size, cudaMemcpyHostToDevice);
+
+        dim3 blockDim(16, 16);
+        dim3 gridDim((N + blockDim.x - 1) / blockDim.x, (N + blockDim.y - 1) / blockDim.y);
+
+        matMulKernel<<<gridDim, blockDim>>>(d_A, d_B, d_C, N);
+
+        cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost);
+
+        cudaFree(d_A);
+        cudaFree(d_B);
+        cudaFree(d_C);
+    }
+
+    int main() {
+        const int N = 512;
+        float *A = new float[N * N];
+        float *B = new float[N * N];
+        float *C = new float[N * N];
+
+        for (int i = 0; i < N * N; i++) {
+            A[i] = 1.0f;
+            B[i] = 2.0f;
+        }
+
+        matMul(A, B, C, N);
+
+        std::cout << "Result C[0]: " << C[0] << std::endl;
+
+        delete[] A;
+        delete[] B;
+        delete[] C;
+        return 0;
+    }
+
+
+To compile the above program we will use `nvcc` compiler that is part of CUDA version 12.3.0 toolkit available as a module in Shabyt cluster. This can be done as follows:
+
+
+    module load CUDA/12.3.0
+    nvcc -O3 my_cuda_program.cu -o my_cuda_program
+
+
+If everything goes well, you should have a binary file called `my_cuda_program` generated in the current directory. Then let us create a SLURM batch script `batch_gpu.slurm` with the following content:
+
+
+    #!/bin/bash
+    #SBATCH --job-name=MyGPUJob              # Your job's name
+    #SBATCH --ntasks=1                       # Run a single task
+    #SBATCH --gres=gpu:1                     # Allocate one GPU for the job
+    #SBATCH --cpus-per-task=4                # Allocate four CPU threads
+    #SBATCH --mem=16G                        # CPU memory requested: 16 Gigabytes (total for 4 threads)
+    #SBATCH --time=0-00:10:00                # Time requested: 0 days + 0 hours + 10 minutes + 0 seconds
+    #SBATCH --partition=NVIDIA               # Specify partition name
+    #SBATCH --output=stdout%j.out            # Specify file name for standard screen output
+    #SBATCH --error=stderr%j.out             # Specify file name for error messages
+    #SBATCH --mail-type=END,FAIL             # Specify when automatic email notification should be sent
+    #SBATCH --mail-user=your.name@nu.edu.kz  # Specify your email address where notifications are sent
+
+    # Load CUDA module that was used to build binary file
+    module load CUDA/12.3.0
+
+    # Run the program
+    srun ./my_cuda_program
+
+
+After submitting this SLURM batch script using the terminal command `sbatch batch_gpu.slurm` it should go to the queue. When the job starts it should complete momentarily (the calculation is rather simple and quick) and print the result in file `stdoutXXXXX.out`.

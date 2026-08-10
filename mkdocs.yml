@@ -1,0 +1,117 @@
+site_name: NU Research Computing
+site_description: User documentation for Nazarbayev University HPC systems
+site_url: https://hpc-wiki.nu.edu.kz
+repo_url: https://github.com/nu-hpc/nu-hpc-wiki
+repo_name: nu-hpc/nu-hpc-wiki
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; Nazarbayev University Research Computing
+
+theme:
+  name: material
+  language: en
+  logo: assets/images/nu_logo.svg
+  favicon: assets/images/nu_logo.svg
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enabled: !ENV [ENABLE_GIT_PLUGINS, false]
+      enable_creation_date: true
+      fallback_to_build_date: true
+      type: timeago
+  - git-authors:
+      enabled: !ENV [ENABLE_GIT_PLUGINS, false]
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+extra_javascript:
+  - assets/javascripts/variants.js
+  - assets/javascripts/diff-viewer.js
+
+extra:
+  social:
+    - icon: fontawesome/solid/envelope
+      link: mailto:hpcadmin@nu.edu.kz
+      name: Contact the HPC team
+  version:
+    provider: mike
+
+nav:
+  - Home: index.md
+  - Current documentation:
+      - Overview: new/index.md
+      - Quick start: new/quick-start.md
+      - Systems: new/systems.md
+      - Job submission: new/job-submission.md
+      - Software: new/software.md
+      - Policies: new/policies.md
+  - Original snapshot:
+      - Overview: old/index.md
+      - Quick start: old/quick-start.md
+      - Systems: old/systems.md
+      - Job submission: old/job-submission.md
+      - Software: old/software.md
+      - Policies: old/policies.md
+  - Migration review:
+      - Audit summary: compare/index.md
+      - Quick start diff: compare/quick-start.md
+      - Systems diff: compare/systems.md
+      - Job submission diff: compare/job-submission.md
+      - Software diff: compare/software.md
+      - Policies diff: compare/policies.md
+  - Contribute:
+      - Git workflow: contribute/git-workflow.md
+      - Maintainer checklist: contribute/maintainer-checklist.md
+
+strict: true

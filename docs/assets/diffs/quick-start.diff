@@ -1,0 +1,180 @@
+--- old/quick-start.md
++++ new/quick-start.md
+@@ -1,62 +1,145 @@
+-# Quick Start
++# Quick start
+ 
+-<div class="snapshot-banner">
+-Original wording normalized from <strong>Quick Start - NU HPC Wiki.mhtml</strong>, saved on 4 August 2026. Commands and limits on this page are historical and may be incorrect.
+-</div>
++This path submits a harmless job, checks its state and reads its output. It does not require application modules.
+ 
+-This Quick Start Tutorial offers a concise introduction for newcomers to High Performance Computing, as well as a refresher for those seeking to revisit the fundamentals. It introduces key concepts, outlines the core philosophy of HPC, and helps you determine whether — and how — HPC can be applied to your research.
++## 1. Confirm access details
+ 
++You need an active NU HPC account, the approved network path (campus network or VPN, if required), and the external login hostname supplied by the HPC team.
+ 
+-## Overview
++!!! warning "Access page was missing from the archive"
++    The imported pages mention the internal aliases `access` (Irgetas), `ln01` (Shabyt) and `mln01` (Muon), but not the public FQDN, VPN route, MFA flow or account-request procedure. Maintainers must add those values before publishing this page.
+ 
+-### What is HPC?
++From your **local computer**:
+ 
+-HPC stands for High Performance Computing and is often used interchangeably with the term supercomputing. A supercomputer is generally understood to be a system capable of performing computations and processing information far more quickly than the devices we use in everyday life, such as laptops or mobile phones. Most supercomputers are built as clusters — collections of powerful computer servers interconnected by high-speed networks. Each server in a cluster is called a compute node. While a compute node is conceptually similar to a workstation, it is usually much more powerful. For instance, a typical laptop today may have 4–8 CPU cores and 8–16 GB of RAM, whereas standard compute nodes on our Shabyt and Irgetas cluster feature 64-192 CPU cores and 256-384 GB of RAM. Moreover, some nodes on Shabyt and Irgetas clusters are equipped with advanced GPU accelerators (Nvidia V100 and Nvidia H100). For certain workloads, each of these GPUs can outperform a server CPU by a factor of 5–10 (i.e. an order of magnitude) or even more, making them especially valuable for tasks involving large-scale number crunching.
++```bash
++ssh <username>@<cluster-login-host>
++```
+ 
+-### HPC Cluster as a Shared Resource
++On first contact, compare the host-key fingerprint with a value published by the HPC team. Do not approve an unexpected or changed fingerprint without verification.
+ 
+-One of the key differences between a supercomputer and a personal laptop or desktop is that an HPC cluster is a shared resource. This means that dozens of users may access the system at the same time. Each user connects from their own computer and submits jobs to run on one or more of the cluster’s compute nodes. Because of this shared model, coordination is essential. Without it, uncontrolled execution of tasks would quickly lead to inefficiency and system instability. To avoid this, virtually all supercomputers rely on job schedulers — specialized software that manages when and where tasks run, ensuring that resources are used effectively and not overcommitted. In addition, job schedulers apply predefined policies to balance workloads and enforce fairness. These policies prioritize jobs according to factors such as user group, project importance, or requested resources, helping to prevent bottlenecks and ensuring equitable access to the cluster’s computing power.
++## 2. Create a working directory
+ 
+-### Role of the Job Scheduler
++After login:
+ 
+-A job scheduler (also called a workload manager) is software that coordinates the execution of user jobs on an HPC system. At Nazarbayev University, all our HPC facilities use <a href="https://slurm.schedmd.com/" class="external text" rel="nofollow">SLURM</a> — a free, open-source scheduler for Linux and Unix-like systems. SLURM is one of the most widely adopted workload managers worldwide, powering many supercomputers and clusters in universities, research institutions, and industry. Users interact with SLURM by writing a batch script. This script specifies the compute resources required (such as CPUs, memory, GPUs, and wall time) and contains the commands needed to run the user’s code. Once submitted, the scheduler places the job in a queue and allocates resources as they become available. When the requested resources are assigned, SLURM executes the commands in the batch script and records the output in a text file, serving as the equivalent of screen output.
++```bash
++mkdir -p "$HOME/hpc-tutorial/logs"
++cd "$HOME/hpc-tutorial"
++```
+ 
+-### Benefits of HPC: Scaling Up and Automation
++Keep each project in its own directory. Store source and small configuration files in Git; do not commit large datasets, credentials or generated results.
+ 
+-Supercomputers offer levels of parallel processing and data storage far beyond what a standard laptop or desktop can provide. This enables researchers to scale up their work — for example, by running simulations at higher resolution or modeling systems of greater size and complexity. In other cases, the benefit comes not from increasing model complexity but from simply being able to run many jobs simultaneously. Unlike personal machines, which are limited by the small number of CPU cores available, HPC clusters provide access to hundreds or even thousands of cores, allowing for far more parallel computations.
++## 3. Select a partition
+ 
+-Another major advantage of HPC is automation. Users can schedule jobs in advance, and the system executes them without supervision. On a personal workstation, long analyses often require keeping a terminal session open, which is inconvenient and error-prone. In contrast, HPC uses batch scripts — prewritten sets of instructions that the scheduler runs once the required resources are available. This makes it possible to carry out jobs lasting several days (subject to time limits set by administrators), with all output automatically written to files so progress can be monitored. For very long workloads, HPC systems may also support checkpointing, a mechanism that saves the current state of a job so it can be resumed later if the run exceeds the allowed time limit or is interrupted.
++The snapshot lists these partition names:
+ 
+-## Common Misconceptions
++| Cluster | General CPU | GPU |
++|---|---:|---:|
++| Irgetas | `ZEN4` | `H100` |
++| Shabyt | `CPU` | `NVIDIA` |
++| Muon | `HPE` | — |
+ 
+-### “If I move my code from a desktop computer to an HPC cluster, it will automatically run faster.”
++Confirm the live value before submitting:
+ 
+-It is a common misconception that simply transferring code from a laptop or desktop to a supercomputer will guarantee faster performance. In reality, that is not always the case. In fact, for some workloads, especially serial jobs, execution may even be slower. This is because the strength of a supercomputer does not lie in the clock speed of individual CPU cores (which are often comparable to or slower than those in personal computers). Instead, performance gains come from the scale of resources available: many more CPU cores per node, multiple interconnected nodes, large memory pools, and specialized accelerators such as GPUs. To benefit from these resources, code must typically be rebuilt or optimized to exploit parallelism. Parallelization allows tasks to be split across multiple CPU cores, threads, or processes, enabling a “divide-and-conquer” approach. However, this does not happen automatically. Parallel execution must be explicitly implemented in the software or configured in the job submission process. Since the exact method depends on the software, users should consult documentation or best practices for their specific application to ensure it can run efficiently on an HPC system.
++```bash
++sinfo -o "%P %a %l %D %G"
++```
+ 
+-### “If I allocate more CPU cores to my job, my software will automatically use them and performance will scale up.”
++## 4. Write a batch script
+ 
+-Requesting a large number of CPU cores for a job does not guarantee faster performance. If the software has not been designed or configured to use multiple cores, those extra resources will simply sit idle — wasting both your allocation and valuable HPC capacity. The job scheduler’s role is only to reserve the resources you request; it does not make your code parallel. To benefit from multiple cores, the software itself must support parallel execution (through multithreading, multiprocessing, or other parallelization techniques), and you must run it with the correct configuration or command-line options. In short, before requesting many cores, make sure your application is capable of using them efficiently.
++Create `hello.slurm` and replace `<partition>` with the CPU partition for your cluster:
+ 
+-### “If I run my job on a node with GPUs, it will automatically use them and run faster.”
++```bash title="hello.slurm"
++#!/bin/bash
++#SBATCH --job-name=hello
++#SBATCH --partition=<partition>
++#SBATCH --time=00:02:00
++#SBATCH --nodes=1
++#SBATCH --ntasks=1
++#SBATCH --cpus-per-task=1
++#SBATCH --mem=256M
++#SBATCH --output=logs/%x-%j.out
+ 
+-Just as with multi-core CPUs, the performance benefits of GPUs come from parallelism. Modern GPUs contain thousands of specialized cores, but software must be explicitly written or adapted to take advantage of them. This usually requires a dedicated software stack tailored to the GPU architecture — such as Nvidia CUDA or other GPU programming frameworks. Importantly, GPU acceleration is not automatic. Even if your code already supports parallel execution across multiple CPU cores or nodes, it will not necessarily make use of GPUs. CPU-based parallelism and GPU-based parallelism rely on different programming models and libraries, and software must be specifically designed or compiled to leverage GPU resources.
++set -euo pipefail
+ 
+-### “All nodes on a supercomputer are the same.”
++echo "job_id=${SLURM_JOB_ID}"
++echo "host=$(hostname)"
++echo "started=$(date --iso-8601=seconds)"
++srun sleep 10
++echo "finished=$(date --iso-8601=seconds)"
++```
+ 
+-NU HPC facilities provide several types of compute nodes, each serving a different purpose. For example, the login node is the entry point for all users upon login. It is intended for lightweight tasks such as file management, code editing, compilation, and interaction with the job scheduler. The login node is not designed for production computations — running heavy jobs there can degrade performance for all users and system processes, and is therefore prohibited by our policy. All intensive computations must instead be submitted to the job scheduler, which distributes them across the compute nodes. The compute nodes themselves are not identical. On the Shabyt and Irgetas clusters, for instance, there are two types: (a) CPU-only nodes, equipped exclusively with CPUs. (b) GPU nodes, which include both CPUs and GPUs. Moreover even though both node types have the same number of CPU cores, the CPU models differ slightly; GPU nodes use processor models with somewhat lower clock speeds to balance power and performance. To ensure efficient use of resources, the scheduler separates these node types into distinct partitions. It is the user’s responsibility to submit jobs to the appropriate partition. For example, if a job does not use GPUs, it must be submitted to the CPU partition so that the expensive GPUs remain available for workloads that can benefit from them. Details about the hardware configuration of NU HPC nodes can be found on the [Systems](https://hpc.nu.edu.kz/index.php/Software "Software") page.
++`%x` expands to the job name and `%j` to the job ID. Slurm does not create missing parent directories, which is why `logs/` was created first.
+ 
+-### “I can run my tasks interactively on a compute node (e.g., work directly in a Jupyter notebook).”
++## 5. Submit and monitor
+ 
+-While interactive access is technically possible on an HPC cluster, it is not the primary mode of operation. Some very large systems support limited interactive use by dedicating specific nodes or by preempting jobs, but this approach runs counter to the philosophy of HPC, which is designed to maximize the efficient use of expensive computational resources. When a user runs code interactively — typing MATLAB commands line by line or executing cells in a Jupyter notebook — the CPU often spends significant time idle, waiting for the next instruction. This results in wasted resources that could otherwise be used for scheduled jobs. A better workflow is to perform development, testing, and debugging interactively on a personal workstation or lightweight environment. Once the code is ready, the heavy production runs should be submitted as batch jobs on the supercomputer, where resources are allocated and utilized efficiently.
++```bash
++sbatch hello.slurm
++squeue --me
++```
+ 
+-If you absolutely do need to run something interactively on an HPC cluster there is a way to do it on our systems. Please look at section [Software](https://hpc.nu.edu.kz/index.php/Software "Software"), which explains how this can be achieved with SLURM. However, be advised that this may require a long wait time.
++`sbatch` prints the assigned job ID. It is an identifier, not a fixed four- or five-digit number. For a specific job:
+ 
+-### “I cannot install my own software.”
++```bash
++scontrol show job <job-id>
++squeue -j <job-id> -o "%.18i %.9P %.16j %.2t %.10M %.6D %R"
++```
+ 
+-Not necessarily. While you cannot install software system-wide or anything that requires *sudo* privileges, you are free to build and install software in your own home directory. This includes creating custom environments and installing packages for languages such as Python or R using their built-in package managers. You can also use EasyBuild, a specialized framework that automates software installation on HPC systems, to build packages of your choice. Keep in mind, however, that any software installed in your home directory will count against your personal disk quota.
++`R` means running and `PD` means pending. For a pending job, the final column gives a reason such as `Resources`, `Priority` or a request/configuration problem. An estimated start time is only an estimate:
+ 
+-System-wide installations and module management are handled by the HPC administrators. If you need software to be available for all users, you can submit a request through the <a href="https://helpdesk.nu.edu.kz/support/catalog/items/272" class="external text" rel="nofollow">Helpdesk ticketing system</a>.
++```bash
++squeue --start -j <job-id>
++```
+ 
+-### “I can use an HPC cluster for immediate real-time processing of data fed continuously from external sources.”
++Cancel a job when it is no longer needed:
+ 
+-HPC clusters are not designed for real-time data processing. If your work requires immediate response to continuous data streams—for example, triggering a telescope action within a second based on AI image recognition of 24/7 astronomical observations, processing critical medical data from hospitals nationwide in real time, or handling large volumes of bank transactions on the fly — you will need either a dedicated server or a suitable cloud service. By contrast, HPC clusters are built for batch processing. Jobs are submitted to a queue and executed only when the requested resources become available. Because of this, it is impossible to guarantee exactly when a computation will start or finish. This queued, background-execution model is what allows HPC systems to achieve extremely high utilization rates — often close to 100% — by keeping expensive hardware continuously busy across many users and projects. Mission-critical real-time servers, on the other hand, must always be available for a single dedicated task. To guarantee responsiveness, they are typically overprovisioned with resources, which often leads to significant underutilization when demand is low.
++```bash
++scancel <job-id>
++```
++
++## 6. Read output and accounting
++
++After the job leaves `squeue`:
++
++```bash
++cat logs/hello-<job-id>.out
++sacct -j <job-id> --format=JobID,JobName,Partition,State,Elapsed,MaxRSS,ExitCode
++```
++
++If `seff` is installed, `seff <job-id>` gives a compact efficiency summary. Use the measurements to reduce over-requested time, memory and CPUs on later runs.
++
++## Transfer files
++
++Run transfers from your **local computer**, not from an active compute job:
++
++=== "rsync (recommended)"
++
++    ```bash
++    rsync -avP ./project/ <username>@<cluster-login-host>:~/project/
++    rsync -avP <username>@<cluster-login-host>:~/project/results/ ./results/
++    ```
++
++=== "scp"
++
++    ```bash
++    scp -r ./project <username>@<cluster-login-host>:~/
++    ```
++
++`rsync` can resume and avoid retransferring unchanged files. Follow university rules for sensitive, licensed or personally identifiable data.
++
++## Short interactive work
++
++Use an interactive allocation for debugging, not for an unattended production run:
++
++```bash
++srun --partition=<partition> --time=00:20:00 \
++  --nodes=1 --ntasks=1 --cpus-per-task=2 --mem=2G \
++  --pty bash -l
++```
++
++The command may wait until resources are available. Exit the shell as soon as testing is complete so the allocation is released.
++
++## Next steps
++
++- Choose the closest [job template](job-submission.md).
++- Learn how to [find modules and create Python environments](software.md).
++- Check [wall times, quotas and backup coverage](policies.md).
