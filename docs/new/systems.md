@@ -30,9 +30,6 @@ NU Research Computing operates three HPC clusters: **Irgetas**, **Shabyt** and *
 
 </div>
 
-!!! info "What has been verified"
-    During the August 2026 documentation migration, administrators confirmed the SSH endpoints, internal addresses, login-node names, operating system family, Slurm partition names, Muon access route and the AMD EPYC 9684X processors in Irgetas GPU nodes. The detailed hardware inventory is based on the source page saved on 4 August 2026. Node availability, reservations and scheduler settings can still change; treat live Slurm output as authoritative.
-
 !!! danger "Login nodes are not compute nodes"
     `access`, `lgn01` and `mln01` are shared entry points. Use them for file management, editing, compilation, data transfer and job submission. Run production computation on nodes allocated by Slurm, never directly on a login node.
 
