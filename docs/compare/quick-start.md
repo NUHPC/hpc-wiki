@@ -3,7 +3,7 @@
 ## What changed
 
 - Replaced a conceptual essay with a first successful Slurm-job path.
-- Added login safety, host-key verification, transfer examples and an explicit warning that the archive lacks public access endpoints.
+- Added administrator-confirmed FQDNs and internal addresses, login safety, host-key verification and transfer examples.
 - Added live partition discovery instead of assuming one cluster.
 - Added a minimal batch script, monitoring, cancellation, accounting and output inspection.
 - Reframed interactive work as a short Slurm allocation rather than an absolute prohibition.
