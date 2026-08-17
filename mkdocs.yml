@@ -1,8 +1,8 @@
 site_name: NU Research Computing
 site_description: User documentation for Nazarbayev University HPC systems
 site_url: https://hpc-wiki.nu.edu.kz
-repo_url: https://github.com/nu-hpc/nu-hpc-wiki
-repo_name: nu-hpc/nu-hpc-wiki
+repo_url: https://github.com/NUHPC/hpc-wiki
+repo_name: NUHPC/hpc-wiki
 edit_uri: edit/main/docs/
 copyright: Copyright &copy; Nazarbayev University Research Computing
 
