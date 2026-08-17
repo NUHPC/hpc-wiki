@@ -2,13 +2,14 @@
 
 ## What changed
 
-- Added an at-a-glance comparison table and partition guidance.
-- Preserved the three managed systems while reducing switch/rack inventory that does not help job selection.
-- Copied cluster images from MHTML into the static site instead of hotlinking MediaWiki.
-- Exposed the Irgetas EPYC 9654/9454 conflict for administrator resolution.
-- Removed the unsupported “1 Mbit/s” storage-throughput assertion.
-- Replaced named personal contacts for non-NU-RC systems with durable owning-unit routes.
-- Added commands for inspecting an allocated node and recording performance context.
+- Added a workload-first decision guide, an at-a-glance comparison and explanations of HPC hardware terminology.
+- Added administrator-confirmed FQDNs, internal addresses, login-node names, partitions and the request-based Muon access route.
+- Corrected Irgetas GPU nodes to 2 × AMD EPYC 9684X and removed the archived 9654/9454 conflict.
+- Expanded Irgetas, Shabyt and Muon into detailed compute, storage, network and peak-performance profiles.
+- Moved specialist rack, switch and cooling data into collapsible technical sections so the main path remains readable.
+- Added storage-selection and workload-selection guidance without treating theoretical specifications as performance guarantees.
+- Retained Q-Symphony and ISSAI as a collapsible historical inventory clearly marked as outside NU Research Computing management.
+- Added live Slurm inspection commands, reproducibility guidance and common selection mistakes.
 
 ## Full diff
 
