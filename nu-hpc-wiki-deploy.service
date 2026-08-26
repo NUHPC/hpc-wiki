@@ -1,0 +1,29 @@
+[Unit]
+Description=Build and deploy NU HPC Wiki from origin/main
+Documentation=https://github.com/NUHPC/hpc-wiki
+Wants=network-online.target
+After=network-online.target nginx.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/nu-hpc-wiki-deploy
+
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+UMask=0022
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/nu-hpc-wiki /var/www/nu-hpc-wiki
+
+[Install]
+WantedBy=multi-user.target
