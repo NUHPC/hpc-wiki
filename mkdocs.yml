@@ -91,6 +91,7 @@ nav:
   - Home: index.md
   - Current documentation:
       - Overview: new/index.md
+      - What is HPC?: new/what-is-hpc.md
       - Quick start: new/quick-start.md
       - Systems: new/systems.md
       - Job submission: new/job-submission.md
