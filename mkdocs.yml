@@ -113,6 +113,7 @@ nav:
       - Policies diff: compare/policies.md
   - Contribute:
       - Git workflow: contribute/git-workflow.md
+      - Automatic deployment: contribute/automatic-deployment.md
       - Maintainer checklist: contribute/maintainer-checklist.md
-
+     
 strict: true
