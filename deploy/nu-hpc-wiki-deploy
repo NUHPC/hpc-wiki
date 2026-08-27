@@ -1,0 +1,169 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+umask 022
+
+readonly DEPLOY_USER="hpcwiki"
+readonly DEPLOY_HOME="/var/lib/nu-hpc-wiki"
+readonly DEPLOY_WORK="${DEPLOY_HOME}/work"
+readonly REPOSITORY="${DEPLOY_WORK}/repo"
+readonly PYTHON="/opt/nu-hpc-wiki/venv/bin/python"
+readonly REQUIREMENTS_HASH="/opt/nu-hpc-wiki/requirements.sha256"
+readonly WEB_ROOT="/var/www/nu-hpc-wiki"
+readonly DEPLOYED_COMMIT="${DEPLOY_HOME}/deployed-commit"
+readonly LOCK_FILE="${DEPLOY_HOME}/deploy.lock"
+readonly SITE_FQDN="hpc-wiki.nu.edu.kz"
+
+build_directory=""
+
+log() {
+  printf '[nu-hpc-wiki-deploy] %s\n' "$*"
+}
+
+fail() {
+  log "ERROR: $*"
+  exit 1
+}
+
+cleanup() {
+  if [[ -n "${build_directory}" ]]; then
+    case "${build_directory}" in
+      "${DEPLOY_WORK}"/build.*)
+        rm -rf -- "${build_directory}"
+        ;;
+      *)
+        log "Refusing to remove unexpected temporary path: ${build_directory}"
+        ;;
+    esac
+  fi
+}
+
+as_deploy_user() {
+  /usr/sbin/runuser -u "${DEPLOY_USER}" -- \
+    /usr/bin/env \
+      HOME="${DEPLOY_WORK}" \
+      PATH="/usr/local/bin:/usr/bin:/bin" \
+      GIT_TERMINAL_PROMPT=0 \
+      "$@"
+}
+
+[[ "${EUID}" -eq 0 ]] || fail "This service must be started by systemd as root."
+
+for required_path in \
+  /usr/bin/awk \
+  /usr/bin/curl \
+  /usr/bin/env \
+  /usr/bin/flock \
+  /usr/bin/git \
+  /usr/bin/mktemp \
+  /usr/bin/rsync \
+  /usr/bin/sha256sum \
+  /usr/sbin/restorecon \
+  /usr/sbin/runuser
+do
+  [[ -x "${required_path}" ]] || fail "Required executable not found: ${required_path}"
+done
+
+[[ -d "${REPOSITORY}/.git" ]] || fail "Deployment repository not found: ${REPOSITORY}"
+[[ -x "${PYTHON}" ]] || fail "Deployment Python environment not found: ${PYTHON}"
+[[ -f "${REQUIREMENTS_HASH}" ]] || fail "Dependency marker not found: ${REQUIREMENTS_HASH}"
+[[ -d "${WEB_ROOT}" ]] || fail "Web root not found: ${WEB_ROOT}"
+
+exec 9>"${LOCK_FILE}"
+if ! /usr/bin/flock -n 9; then
+  log "Another deployment is already running; exiting."
+  exit 0
+fi
+
+trap cleanup EXIT
+
+log "Fetching origin/main."
+as_deploy_user /usr/bin/git -C "${REPOSITORY}" fetch --quiet --prune origin main
+
+target_commit="$({
+  as_deploy_user /usr/bin/git -C "${REPOSITORY}" \
+    rev-parse --verify 'origin/main^{commit}'
+})"
+
+current_commit=""
+if [[ -f "${DEPLOYED_COMMIT}" ]]; then
+  current_commit="$(<"${DEPLOYED_COMMIT}")"
+fi
+
+if [[ "${target_commit}" == "${current_commit}" ]]; then
+  log "No change: ${target_commit} is already deployed."
+  exit 0
+fi
+
+tracked_changes="$({
+  as_deploy_user /usr/bin/git -C "${REPOSITORY}" \
+    status --porcelain --untracked-files=no
+})"
+[[ -z "${tracked_changes}" ]] || \
+  fail "The dedicated deployment checkout contains tracked local changes."
+
+required_hash="$({
+  as_deploy_user /usr/bin/git -C "${REPOSITORY}" \
+    show "${target_commit}:requirements.lock.txt" | \
+    /usr/bin/sha256sum | \
+    /usr/bin/awk '{print $1}'
+})"
+installed_hash="$(<"${REQUIREMENTS_HASH}")"
+
+if [[ "${required_hash}" != "${installed_hash}" ]]; then
+  fail "requirements.lock.txt changed. Update the root-owned deployment virtual environment and dependency marker before deploying."
+fi
+
+log "Checking out ${target_commit}."
+as_deploy_user /usr/bin/git -C "${REPOSITORY}" \
+  checkout --quiet --detach "${target_commit}"
+
+build_directory="$({
+  as_deploy_user /usr/bin/mktemp -d "${DEPLOY_WORK}/build.XXXXXXXX"
+})"
+
+case "${build_directory}" in
+  "${DEPLOY_WORK}"/build.*) ;;
+  *) fail "Unexpected build directory: ${build_directory}" ;;
+esac
+
+log "Building documentation with strict validation."
+cd "${REPOSITORY}"
+as_deploy_user /usr/bin/env ENABLE_GIT_PLUGINS=true \
+  "${PYTHON}" -m mkdocs build \
+  --config-file "${REPOSITORY}/mkdocs.yml" \
+  --site-dir "${build_directory}/site" \
+  --clean \
+  --strict
+
+[[ -s "${build_directory}/site/index.html" ]] || \
+  fail "Strict build completed without a non-empty index.html."
+
+log "Publishing static files to ${WEB_ROOT}."
+/usr/bin/rsync \
+  --recursive \
+  --times \
+  --delete-delay \
+  --delay-updates \
+  --chmod=D755,F644 \
+  "${build_directory}/site/" \
+  "${WEB_ROOT}/"
+
+/usr/sbin/restorecon -RF "${WEB_ROOT}"
+
+log "Checking the local HTTPS endpoint."
+/usr/bin/curl \
+  --fail \
+  --silent \
+  --show-error \
+  --head \
+  --resolve "${SITE_FQDN}:443:127.0.0.1" \
+  "https://${SITE_FQDN}/" \
+  >/dev/null
+
+marker_tmp="${DEPLOYED_COMMIT}.tmp"
+printf '%s\n' "${target_commit}" >"${marker_tmp}"
+chmod 0644 "${marker_tmp}"
+mv -f -- "${marker_tmp}" "${DEPLOYED_COMMIT}"
+
+log "Successfully deployed ${target_commit}."
