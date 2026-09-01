@@ -5,7 +5,7 @@ NU HPC software is exposed primarily through Lmod environment modules. Exact ver
 ## Find and load modules
 
 ```bash
-module purge
+111module purge
 module spider python
 module spider Python/<version>
 module load Python/<version-and-toolchain>
