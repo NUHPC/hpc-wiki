@@ -195,33 +195,6 @@ module list
 srun lmp -in input.in
 ```
 
-The old script omitted `#` from several `#SBATCH` directives, so the shell tried to execute them as commands. It also mixed a LAMMPS toolchain with independently loaded compiler/MPI versions. Both issues are corrected here.
-
-## Containers
-
-If Apptainer is available, it can package complex user-space dependencies without root access:
-
-```bash
-module spider Apptainer
-module load <apptainer-module>
-apptainer exec image.sif ./application
-```
-
-Build images on an approved system, pin image digests where practical, and follow licensing/data rules. A container does not replace Slurm resource requests or provide an incompatible host driver.
-
-## Git on the cluster
-
-```bash
-git clone <repository-url>
-cd <repository>
-git switch -c docs/update-example
-git status
-git add docs/new/example.md
-git commit -m "docs: update example"
-git push -u origin docs/update-example
-```
-
-Use SSH keys or the hosting platform's approved authentication method; never save tokens in scripts or commit private keys. The documentation-specific review process is described in [Git workflow](../contribute/git-workflow.md).
 
 ## Requesting shared software
 
