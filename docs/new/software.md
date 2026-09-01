@@ -5,7 +5,7 @@ NU HPC software is exposed primarily through Lmod environment modules. Exact ver
 ## Find and load modules
 
 ```bash
-111module purge
+module purge
 module spider python
 module spider Python/<version>
 module load Python/<version-and-toolchain>
@@ -67,8 +67,9 @@ For reproducibility, prefer one well-defined channel policy and commit `environm
 ## GCC and GNU Fortran
 
 ```bash
+module purge
 module spider GCC
-module load <gcc-module>
+module load GCC
 gcc -O2 -Wall -Wextra hello.c -o hello
 gfortran -O2 -Wall -Wextra hello.f90 -o hello-fortran
 ```
@@ -80,8 +81,9 @@ Use `-fopenmp` for OpenMP code. Treat `-ffast-math` as an algorithmic change: it
 Use wrapper compilers from a single module stack:
 
 ```bash
+module purge
 module spider foss
-module load <foss-module>
+module load foss
 mpicc -O2 program.c -o program
 mpifort -O2 program.f90 -o program-fortran
 ```
@@ -93,8 +95,9 @@ Record `mpicc --showme` or the equivalent wrapper output when diagnosing linkage
 CUDA workloads require three compatible layers: NVIDIA driver, CUDA toolkit/runtime and the application.
 
 ```bash
+module purge
 module spider CUDA
-module load <cuda-module>
+module load CUDA
 nvcc --version
 ```
 
