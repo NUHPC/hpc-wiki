@@ -38,9 +38,5 @@ Practical, reviewed guidance for running research workloads on the Irgetas, Shab
 
 </div>
 
-## Transparent migration
-
-The former MediaWiki snapshot is available beside the rewritten documentation. Every article has an **Original / Current / Changes** selector, and the Changes view provides a full color diff. The [audit summary](compare/index.md) lists factual conflicts, broken examples and values that still require administrator confirmation.
-
 !!! info "Configuration changes over time"
     Treat live Slurm and Lmod output as authoritative. Before a large run, check `sinfo`, `scontrol show partition`, `module spider`, and the policy page.
