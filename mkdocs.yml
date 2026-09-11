@@ -55,6 +55,8 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
+  - pymdownx.superfences
   - attr_list
   - md_in_html
   - tables
@@ -75,9 +77,6 @@ markdown_extensions:
 extra_css:
   - assets/stylesheets/extra.css
 
-extra_javascript:
-  - assets/javascripts/variants.js
-  - assets/javascripts/diff-viewer.js
 
 extra:
   social:
@@ -97,20 +96,6 @@ nav:
       - Job submission: new/job-submission.md
       - Software: new/software.md
       - Policies: new/policies.md
-  - Original snapshot:
-      - Overview: old/index.md
-      - Quick start: old/quick-start.md
-      - Systems: old/systems.md
-      - Job submission: old/job-submission.md
-      - Software: old/software.md
-      - Policies: old/policies.md
-  - Migration review:
-      - Audit summary: compare/index.md
-      - Quick start diff: compare/quick-start.md
-      - Systems diff: compare/systems.md
-      - Job submission diff: compare/job-submission.md
-      - Software diff: compare/software.md
-      - Policies diff: compare/policies.md
   - Contribute:
       - Git workflow: contribute/git-workflow.md
       - Automatic deployment: contribute/automatic-deployment.md
