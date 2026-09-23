@@ -164,7 +164,7 @@ Irgetas is NU's newest Research Computing cluster. The HPE system was deployed i
 | Role / partition | Count | Processors | Physical cores / hardware threads | RAM | GPUs | Local storage | Compute fabric |
 |---|---:|---|---:|---:|---|---:|---|
 | CPU node · `ZEN4` | 10 | 2 × AMD EPYC 9684X | 192 / 384 | 384 GB DDR5-4800 | — | 1.92 TB SSD | 200 Gb/s NDR InfiniBand |
-| GPU node · `H100` | 6 | 2 × AMD EPYC 9684X | 192 / 384 | 768 GB DDR5-4800 | 4 × NVIDIA H100 SXM5, 80 GB HBM3 each | 1.92 TB SSD | 2 × 400 Gb/s NDR InfiniBand |
+| GPU node · `H100` | 6 | 2 × AMD EPYC 9654 | 192 / 384 | 768 GB DDR5-4800 | 4 × NVIDIA H100 SXM5, 80 GB HBM3 each | 1.92 TB SSD | 2 × 400 Gb/s NDR InfiniBand |
 | Login node · `access` | 1 | 1 × AMD EPYC 9684X | 96 / 192 | 192 GB DDR5-4800 | — | 7.68 TB SSD | 200 Gb/s NDR InfiniBand |
 
 The EPYC 9684X configuration for GPU nodes was confirmed by the administrator during this documentation update.
