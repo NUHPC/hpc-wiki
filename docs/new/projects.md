@@ -75,6 +75,9 @@
 === "Carbon Management"
 
     ## Atomic Simulations for Carbon Management
+    > HPC-enabled large-scale atomic simulations serve as a cornerstone for the development and optimization of next-generation carbon management technologies.
+    > By leveraging the massive parallel processing power of exascale supercomputers, researchers can model materials and chemical interactions at the quantum and molecular levels with unprecedented scale and accuracy. 
+    > This accelerates the discovery of breakthrough solutions needed to meet global net-zero targets.
 
     **Dias Bekeshov**
 
@@ -92,9 +95,8 @@
 
     ## Ion Irradiation in SiC: Molecular Dynamics
 
+    > Here is a visualization of our simulations: an ion-irradiation molecular dynamics simulation of the nuclear cladding material, SiC.
     **Kairolla Sekerbayev**
-
-    Here is a visualization of our simulations: an ion-irradiation molecular dynamics simulation of the nuclear cladding material, SiC.
 
     <figure style="margin:0; padding:1rem; border:1px solid var(--md-default-fg-color--lightest); border-radius:12px; background:var(--md-default-bg-color);">
       <video controls playsinline preload="none" aria-label="Ion Irradiation in SiC" style="display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#101820; border-radius:8px;">
