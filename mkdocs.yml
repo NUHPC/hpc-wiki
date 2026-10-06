@@ -96,6 +96,7 @@ nav:
       - Job submission: new/job-submission.md
       - Software: new/software.md
       - Policies: new/policies.md
+      - Research Projects: new/projects.md
   - Contribute:
       - Git workflow: contribute/git-workflow.md
       - Automatic deployment: contribute/automatic-deployment.md
