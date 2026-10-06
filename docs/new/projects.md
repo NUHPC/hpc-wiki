@@ -63,13 +63,6 @@
       </video>
       <figcaption style="margin-top:0.65rem; text-align:left;"><strong>Visualisation 07</strong> · <a href="/videos/biomedical/visualisation-07.mp4" download>Download video</a></figcaption>
     </figure>
-    <figure style="margin:0; padding:1rem; border:1px solid var(--md-default-fg-color--lightest); border-radius:12px; background:var(--md-default-bg-color);">
-      <video controls playsinline preload="none" aria-label="Visualisation 08" style="display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#101820; border-radius:8px;">
-        <source src="/videos/biomedical/visualisation-08.mp4" type="video/mp4">
-        Your browser does not support embedded video.
-      </video>
-      <figcaption style="margin-top:0.65rem; text-align:left;"><strong>Visualisation 08</strong> · <a href="/videos/biomedical/visualisation-08.mp4" download>Download video</a></figcaption>
-    </figure>
     </div>
 
 === "Carbon Management"
