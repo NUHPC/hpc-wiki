@@ -94,6 +94,8 @@
     ## Ion Irradiation in SiC: Molecular Dynamics
 
     > Here is a visualization of our simulations: an ion-irradiation molecular dynamics simulation of the nuclear cladding material, SiC.
+    >
+    
     **Kairolla Sekerbayev**
 
     <figure style="margin:0; padding:1rem; border:1px solid var(--md-default-fg-color--lightest); border-radius:12px; background:var(--md-default-bg-color);">
