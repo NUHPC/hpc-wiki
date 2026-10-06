@@ -88,7 +88,7 @@ extra:
 
 nav:
   - Home: index.md
-  - Current documentation:
+  - Documentation:
       - Overview: new/index.md
       - What is HPC?: new/what-is-hpc.md
       - Quick start: new/quick-start.md
@@ -96,10 +96,10 @@ nav:
       - Job submission: new/job-submission.md
       - Software: new/software.md
       - Policies: new/policies.md
-      - Research Projects: new/projects.md
   - Contribute:
       - Git workflow: contribute/git-workflow.md
       - Automatic deployment: contribute/automatic-deployment.md
       - Maintainer checklist: contribute/maintainer-checklist.md
+  - Research Projects: new/projects.md
      
 strict: true
