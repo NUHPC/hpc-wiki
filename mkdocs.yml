@@ -100,6 +100,6 @@ nav:
       - Git workflow: contribute/git-workflow.md
       - Automatic deployment: contribute/automatic-deployment.md
       - Maintainer checklist: contribute/maintainer-checklist.md
-  - Research Projects: new/projects.md
+  - Research Highlights: new/projects.md
      
 strict: true
