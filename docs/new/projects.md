@@ -1,4 +1,4 @@
-# Research Projects
+# Research Highlights
 
 === "Biomedical Visualisations"
 
