@@ -11,7 +11,7 @@
     > As a hobby, I create eye-catching video visualizations of my simulations.
 
     **Semen Baldin**  
-    *1st year PhD student, NUSOM*
+    *First year PhD student, NUSOM*
 
     <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap:1rem; margin:1.5rem 0;">
     <figure style="margin:0; padding:1rem; border:1px solid var(--md-default-fg-color--lightest); border-radius:12px; background:var(--md-default-bg-color);">
