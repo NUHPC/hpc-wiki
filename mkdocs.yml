@@ -96,10 +96,6 @@ nav:
       - Job submission: new/job-submission.md
       - Software: new/software.md
       - Policies: new/policies.md
-  - Contribute:
-      - Git workflow: contribute/git-workflow.md
-      - Automatic deployment: contribute/automatic-deployment.md
-      - Maintainer checklist: contribute/maintainer-checklist.md
   - Research Highlights: new/projects.md
      
 strict: true
